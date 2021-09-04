@@ -1,8 +1,17 @@
 <?php
+/*
+* Script responsável por pelo formulário de login do usuário no sistema
+* @since 2021-08-01
+* @author Dennis Henrique
+*/
+
+
 session_start();
+# Se já tiver uma sessão ativa, redireciona para a tela de listagem
 if(isset($_SESSION["sess_id"])){
-    header("location:index.php");exit;    
+    header("location:/");exit;    
 }else{
+    # Se tiver alguma mensagem de erro, recuperar para exibir na tela.
     $msgErro = null;
     if(isset($_SESSION["alert-danger"])){
         $msgErro = '<span class="alert alert-danger" style="padding:5px;">'.$_SESSION["alert-danger"].'</span>';

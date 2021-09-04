@@ -1,7 +1,13 @@
 <?php
+/*
+* Classe responável pelos dedos dos usuários. 
+* Ela herda da classe Conexão.
+* @since 2021-08-01
+* @author Dennis Henrique
+*/
 require_once("Conexao.php");
 
-class Usuario extends conexao
+class Usuario extends Conexao
 {
     private $id;
     private $nome;
@@ -39,13 +45,13 @@ class Usuario extends conexao
     public function criar(){
         
         $sql = "INSERT INTO usuarios (nome, senha, email) VALUES ('$this->nome', MD5('$this->senha'), '$this->email');";
-        $res = mysqli_query(parent::conexao(), $sql) or die(mysqli_error(parent::conexao()));
-        return mysqli_insert_id(parent::conexao());
+        $res = mysqli_query(parent::getConexao(), $sql) or die(mysqli_error(parent::getConexao()));
+        return mysqli_insert_id(parent::getConexao());
     }
 
     public function login(){
         $sql = "SELECT * FROM $this->tabela WHERE email = '$this->email' AND senha = MD5('$this->senha') LIMIT 1";
-        $res = mysqli_query(parent::conexao(), $sql) or die(mysqli_error(parent::conexao()));
+        $res = mysqli_query(parent::getConexao(), $sql) or die(mysqli_error(parent::getConexao()));
         
         if(mysqli_num_rows($res)){
             $row = mysqli_fetch_object($res);
@@ -79,7 +85,7 @@ class Usuario extends conexao
         }
         
         $sql = "SELECT * FROM $this->tabela WHERE id > 0 $aux_where";
-        $res = mysqli_query(parent::conexao(), $sql) or die(mysqli_error(parent::conexao()));
+        $res = mysqli_query(parent::getConexao(), $sql) or die(mysqli_error(parent::getConexao()));
         while($row = mysqli_fetch_object($res)){
             $obj = new Usuario();
             $obj->setId($row->id);
@@ -93,7 +99,7 @@ class Usuario extends conexao
 
     public function apagar(int $id){
         $sql = "DELETE FROM $this->tabela WHERE id ='$id' LIMIT 1";
-        $res = mysqli_query(parent::conexao(), $sql) or die(mysqli_error(parent::conexao()));
+        $res = mysqli_query(parent::getConexao(), $sql) or die(mysqli_error(parent::getConexao()));
     }
 
     public function ataualizar(){
@@ -106,7 +112,7 @@ class Usuario extends conexao
                     id = '{$this->id}'
                 LIMIT 1
                 ";
-        $res = mysqli_query(parent::conexao(), $sql) or die(mysqli_error(parent::conexao()));
+        $res = mysqli_query(parent::getConexao(), $sql) or die(mysqli_error(parent::getConexao()));
     }
 
     public function alterarSenha(int $id, string $senha){
@@ -118,7 +124,7 @@ class Usuario extends conexao
                     id = '{$id}'
                 LIMIT 1
                 ";
-        $res = mysqli_query(parent::conexao(), $sql) or die(mysqli_error(parent::conexao()));
+        $res = mysqli_query(parent::getConexao(), $sql) or die(mysqli_error(parent::getConexao()));
     }
     
 }

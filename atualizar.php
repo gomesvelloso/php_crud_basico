@@ -1,44 +1,84 @@
 <?php
+/*
+* Script responsável por carregar os dados do usuário em tela (Quando foi enviado o GET)
+* e responsável por atualizar os dados quando for enviado um formulário via post.
+* @since 2021-08-01
+* @author Dennis Henrique
+*/
 require_once "topo.php";
+
+# Seto as variáveis como null.
+$idUser = $nome = $email = null;
+
+# Se for setado o id via GET.
 if(isset($_GET["t"])){
 
+    # Recebe o id do usuário via GET.
     $idUser = addslashes(trim($_GET["t"]));
     
-     //Verifica se existe
+    # Verifica se o id é um númérico.
+    if(! is_numeric($idUser)){
+        $_SESSION["alert-danger"]= "Erro: O código enviado é inválido.";
+        header("location: /");exit;
+    }
+
+    # Verifica se o usuário existe na base de dados.
     $dados = $obj->listar(array("id"=>$idUser));
     
     if(!empty($dados)){
         $nome  = $dados[0]->getNome();
         $email = $dados[0]->getEmail();
     }else{
+        # Se não achou, redireciona para o index com msg de erro.
         $_SESSION["alert-danger"]= "Usuário não encontrado.";
-        header("location: index.php");exit;
+        header("location: /");exit;
 
     }
 }else if(isset($_POST["nome"])){
+
+    # Recebe os dados via post do formulário.
     $nome   = addslashes($_POST["nome"]);
     $email  = addslashes(trim($_POST["email"]));
     $idUser = addslashes(trim($_POST["id"]));
-   
-    //Verifica se existe
+    
+    # Verifica se existe na base de dados
     $dados = $obj->listar(array("id"=>$idUser));
     if(empty($dados)){
-         $_SESSION["alert-danger"]= "Usuário não encontrado.";
+        # Se não achou o usuário, redireciona com aviso de erro.
+        $_SESSION["alert-danger"]= "Usuário não encontrado.";
         header("location: /");exit;
     }
     
+    # Verifica se o e-mail digitado existe na base para outro usuário.
+    $consultaEmail = $obj->listar(array("email"=>$email));
+    if(!empty($consultaEmail)){
+        # Se achou o e-mail na base de dados e ele não pertencer ao usuário que está sendo atualizado.
+        # redireciona com aviso de erro.
+        foreach($consultaEmail as $consulta){
+            if($consulta->getId() != $idUser){
+                # Usuários diferentes. Atualização não permitida, pois ja tem outro usuário com o e-mail.
+                $_SESSION["alert-danger"]= "Atenção: Este e-mail [$email] está cadastrado para outro Usuário. Atualizaçao de dados do $nome não permitida.";
+                header("location: /");exit;
+            }
+        }
+    }
+
+    # Achou o usuário. Atualiza os dados.
     $obj->setId($idUser);
     $obj->setNome(ucwords($nome));
     $obj->setEmail($email);
     
+    # Executa o método para atualizar o usuário.
     $salva = $obj->ataualizar();
     
+    # Se foi setado o post senha, atualiza a senha.
     if(isset($_POST["senha"])){
         $senha = addslashes(trim($_POST["senha"]));
         $atualizaSenha = $obj->alterarSenha($idUser,$senha);
     }
-     $_SESSION["alert-success"]= "Usuário atualizado com sucesso.".
-        header("location: /");exit;
+    # Redireciona para a tela com mensgem de sucesso.
+    $_SESSION["alert-success"]= "Usuário atualizado com sucesso.".
+    header("location: /");exit;
 }
 ?>
 
@@ -74,11 +114,11 @@ if(isset($_GET["t"])){
                 <input type="email" class="form-control" required="required" name="email" value="<?php echo $email?>" />
             </div>
             <div class="col-md-12">
-            <?php if($dadosUsuario[0]->getId() == $_SESSION["sess_id"]){?>
+            <?php if($idUser == $_SESSION["sess_id"]){?>
                 <label>
                     Senha
                 </label>
-                <input type="password" required="required" class="form-control" name="senha" />
+                <input type="password" required="required"  maxlength="12" class="form-control" name="senha" />
             <?php } ?>
             </div>
             
